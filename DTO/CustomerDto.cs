@@ -14,6 +14,7 @@ namespace TestWebApiProject.DTO
         public decimal Amount { get; set; }
         public string Email { get; set; }
         public string Gender { get; set; }
+        public DateTime? DateOfBirth { get; set; }
         public string Mobile { get; set; }
         public string Designation { get; set; }
         public List<Address> AddressList { get; set; }
