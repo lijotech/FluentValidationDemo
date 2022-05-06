@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using TestWebApiProject.DTO;
+using TestWebApiProject.Services;
 using TestWebApiProject.Validator;
 
 namespace TestWebApiProject.Controllers
@@ -15,13 +16,18 @@ namespace TestWebApiProject.Controllers
     [Route("[controller]")]
     public class FluentValidationDemoController : ControllerBase
     {
+        private readonly IServiceMethod _serviceMethods;
+        public FluentValidationDemoController(IServiceMethod serviceMethods)
+        {
+            _serviceMethods = serviceMethods;
+        }
 
         [HttpPost]
         public async Task<IActionResult> PostMethod(Customer customer)
         {
             try
             {
-                await new CustomerValidator().ValidateAndThrowAsync(customer);
+                await new CustomerValidator(_serviceMethods).ValidateAndThrowAsync(customer);
 
                 return Ok();
             }
