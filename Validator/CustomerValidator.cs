@@ -66,13 +66,69 @@ namespace TestWebApiProject.Validator
                         .WithMessage($"Gender is invalid, allowed values are {String.Join(",", genderTypes)}");
             });
 
+            
+            When(e => (!string.IsNullOrEmpty(e.Username) && !string.IsNullOrEmpty(e.Email)), () =>
+            {
+                //Validation based on two fields in request model
+                RuleFor(e => new {e.Username,e.Email })
+                        .Must(x => !x.Email.Contains(x.Username))
+                        .WithMessage(x=>$"Email should not contain the username: {x.Username}");
+            });
+
+            //Validation based on external service method
             RuleFor(e => e.IdentificationNumber)
                 .NotEmpty()
                 .WithMessage("Identification number required.")
                 .MustAsync(async (f, _) => await _serviceMethods.ValidateIdentificationNumber(f))
                 .WithMessage("Identification number not valid");
 
+            //Validation for Child List items
+            RuleForEach(x => x.AddressList).ChildRules(items =>
+            {
+                items.RuleFor(e => e.PostBox)
+                 .NotEmpty()
+                 .WithMessage("Postbox required.");
+            });
 
+            //Validation with use of SetValidator seperate class
+            When(e => (e.DocumentList != null && e.DocumentList.Count > 0), () =>
+            {
+                RuleForEach(x => x.DocumentList)
+                    .SetValidator(model => new DocumentValidator());
+            });
+
+            //Validation with conditional rule in a list of items
+            RuleForEach(model => model.DocumentList.Where(g => g.IsActive.HasValue
+            && g.IsActive.Value)).ChildRules(items =>
+            {
+                items.RuleFor(x => x.Id)
+                    .NotEmpty()
+                    .WithMessage("DocumentList Id required when document active.");
+            }).OverridePropertyName("DocumentListValidatorWhenActive");
+        }
+    }
+
+
+    public class DocumentValidator : AbstractValidator<Document>
+    {
+        public DocumentValidator()
+        {
+
+            RuleFor(x => x.DocumentName)
+               .NotEmpty()
+               .WithMessage("Document name required");
+
+            RuleFor(x => x.CreatedDate)
+                    .LessThan(x => System.DateTime.Today)
+                    .WithMessage("Document created date cannot be greater than todays date.");
+
+            RuleFor(x => x.ExpiryDate)
+                  .GreaterThan(x => System.DateTime.Today)
+                  .WithMessage("Document expiry date should be greater than todays date.");
+
+            RuleFor(x => x.ExpiryDate)
+                 .GreaterThan(x => x.CreatedDate)
+                 .WithMessage("Document expiry date should be greater than created date.");
         }
     }
 }

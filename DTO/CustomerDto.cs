@@ -16,7 +16,7 @@ namespace TestWebApiProject.DTO
         public string Gender { get; set; }
         public DateTime? DateOfBirth { get; set; }
         public string Mobile { get; set; }
-        public string Designation { get; set; }
+        public string Username { get; set; }
         public List<Address> AddressList { get; set; }
         public List<Document> DocumentList { get; set; }
     }
@@ -30,6 +30,8 @@ namespace TestWebApiProject.DTO
 
     public class Document
     {
+        public int Id { get; set; }
+        public bool? IsActive { get; set; }
         public string DocumentName { get; set; }
         public DateTime ExpiryDate { get; set; }
         public DateTime CreatedDate { get; set; }
